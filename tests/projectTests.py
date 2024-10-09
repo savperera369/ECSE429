@@ -151,7 +151,7 @@ class TestTodoManagerAPI(unittest.TestCase):
     def test_create_task_for_project(self):
         """POST /projects/:id/tasks: Test creating a task for a project."""
         task_data = {
-            "id": "3"
+            "title": "test"
         }
         response = requests.post(f"{self.BASE_URL}/{self.test_project_id}/tasks", json=task_data)
         logging.info(f"Create Task for Project Response: {response.status_code} - {response.text}")
