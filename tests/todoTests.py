@@ -67,6 +67,12 @@ class TestTodoAPI(unittest.TestCase):
         logging.info(f"Update Todo Response: {response.status_code} - {response.text}")
         self.assertEqual(response.status_code, 200)
 
+    def test_delete_todo_undocumented(self):
+        """DELETE /todos: Test deleting a todo (this is not allowed at this endpoint)."""
+        response = requests.delete(self.BASE_URL)
+        logging.info(f"Deleting Todo Response: {response.status_code} - {response.text}")
+        self.assertEqual(response.status_code, 200)
+
     # /todos/:id
     def test_get_todo_by_id(self):
         """GET /todos/:id: Test retrieving a todo by its ID."""
