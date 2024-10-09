@@ -72,7 +72,7 @@ class TestTodoManagerAPI(unittest.TestCase):
         }
         response = requests.post(self.BASE_URL, json=project_data)
         logging.info(f"Create Project Response with Malformed Payload: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 400)
 
     def test_put_project_id(self):
         """PUT /projects/:id: Test updating a project (this is not allowed at this endpoint)."""
@@ -82,7 +82,7 @@ class TestTodoManagerAPI(unittest.TestCase):
         }
         response = requests.put(self.BASE_URL, json=updated_data)
         logging.info(f"Update Project Response: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 405)
 
     # /projects/:id
     def test_get_project_by_id(self):

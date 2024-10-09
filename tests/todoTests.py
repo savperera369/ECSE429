@@ -65,13 +65,13 @@ class TestTodoAPI(unittest.TestCase):
         }
         response = requests.put(self.BASE_URL, json=todo_data)
         logging.info(f"Update Todo Response: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 405)
 
     def test_delete_todo_undocumented(self):
         """DELETE /todos: Test deleting a todo (this is not allowed at this endpoint)."""
         response = requests.delete(self.BASE_URL)
         logging.info(f"Deleting Todo Response: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 405)
 
     # /todos/:id
     def test_get_todo_by_id(self):
@@ -105,7 +105,7 @@ class TestTodoAPI(unittest.TestCase):
         }
         response = requests.put(f"{self.BASE_URL}/{self.test_todo_id}", json=created_data)
         logging.info(f"Created Todo Response with Malformed Payload: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 400)
 
     def test_update_todo(self):
         """PUT /todos/:id: Test updating a todo."""
