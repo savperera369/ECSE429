@@ -1,9 +1,6 @@
 Feature: Create a new To-do item
 	As a user, I want to create a new to-do item so that I can keep track of my tasks
 
-	Background:
-		Given the REST API is running
-
 	Scenario Outline: Normal flow - Successfully create a new to-do item.
 		Given I have a valid title, doneStatus, and description for the to-do item to be created
 		When I send a POST request to "/todos" with the valid details
