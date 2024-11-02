@@ -1,0 +1,16 @@
+Kristian Myzeqari 261037094
+
+User stories for ToDos:
+
+1. As a user, I want to create a new to-do item so that I can keep track of my tasks. (This is from POST /todos)
+
+Acceptance scenarios:
+1.1 
+
+2. As a user, I want to update an existing to-do item so that I can replace the task's information in one request if needed. (This is from PUT /todos/:id)
+
+3. As a user, I want to view all the categories associated with an existing to-do item so that I can visualize how this task is part of different categories. (This is from GET /todos/:id/categories)
+
+4. As a user, I want to delete an association between a to-do item and a category so that I can reorganize my workspace. (This is from DELETE /todos/:id/categories/:id)
+
+5. As a user, I want to create a relationship between an existing to-do item and a project so that I can assign tasks to certain projects. (This is from POST /todos/:id/tasksof)
