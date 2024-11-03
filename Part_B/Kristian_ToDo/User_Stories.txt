@@ -13,4 +13,4 @@ Acceptance scenarios:
 
 4. As a user, I want to delete an association between a to-do item and a category so that I can reorganize my workspace. (This is from DELETE /todos/:id/categories/:id)
 
-5. As a user, I want to create a relationship between an existing to-do item and a project so that I can assign tasks to certain projects. (This is from POST /todos/:id/tasksof)
+5. As a user, I want to create a relationship between an existing to-do item and a project so that I can organize my tasks by project. (This is from POST /todos/:id/tasksof)
