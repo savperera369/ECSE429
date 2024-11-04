@@ -8,7 +8,6 @@ def step_valid_info_check(context, title, doneStatus, description):
     context.title = title
     context.doneStatus = True
     context.description = description
-    print(context.doneStatus)
 
 @given('I have the details of a to-do without a title')
 def step_invalid_title_check(context):
@@ -32,12 +31,6 @@ def step_create_todo_with_title(context, title):
 @when ('I send a POST request to todos with the details')
 def step_create_todo_no_title(context):
     context.response = requests.post(f"{BASE_URL}/todos", {})
-
-
-
-# @then('I should receive a "{status_code}" status')
-# def step_check_status_code_info(context, status_code):
-#     assert context.response.status_code == int(status_code)
 
 @then('I should receive a 201 created status')
 def step_check_response_content(context):
