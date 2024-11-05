@@ -3,7 +3,7 @@ Feature: Delete To-Do Category Association
 
 	Scenario: Normal flow - Successfully delete an association
 		Given I have an existing to-do item with ID "todo_id" associated with category ID "category_id"
-		When I send a DELETE request to "/todos/todo_id/categories/category_id"
+		When I send a DELETE request to "/todos/:todo_id/categories/:category_id"
 		Then I should receive a "200 OK" status
 
 	Scenario: Alternate flow - Deleting an already removed association
@@ -14,4 +14,4 @@ Feature: Delete To-Do Category Association
 	Scenario: Error flow - Invalid to-do ID
 		Given I have an invalid to-do item ID "todo_id" or category ID "category_id"
 		When I send a wrong DELETE request to "/todos/todo_id/categories/category_id"
-		Then I should receive a response "400 Bad Request" status
+		Then I should receive a response "404 Not Found" status

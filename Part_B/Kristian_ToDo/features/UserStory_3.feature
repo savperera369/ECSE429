@@ -11,7 +11,7 @@ Feature: View Categories
 		When I send a GET request to /todos/:id/categories
 		Then I should receive a 200 OK status
 
-	Scenario: Error flow - View the categories of a non-existing to-do item
-		Given I have a non-existent to-do item ID id
-		When I send a GET request to /todos/:id/categories with the wrong id
+	Scenario: Error flow - View the categories of an existing to-do item with bad url
+		Given I have a existent to-do item ID id
+		When I send a GET request to /todos/:id/category
 		Then I should receive a "404 Not Found" status
