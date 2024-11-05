@@ -1,20 +1,29 @@
-Feature: Getting all projects
-	As a user, I want to get all projects so that I can see and manage every project in the system.
+Feature: Getting all todos related to a project
+	As a user, I want to get all todos of a specific project so that I can see and manage the todos of that project in the system.
 
-	Scenario Outline: Normal flow - Successfully retrieve list of all projects in JSON form.
-		Given I have the application running on localhost:4567
-		When I send a GET request to "/projects"
+	Scenario Outline: Normal flow - Successfully retrieve todos of a specific project by id in JSON form
+		Given I possess a valid project id "<id>"
+		When I send a GET request to "/projects/<id>/tasks"
 		Then I should receive a "200 OK" status
-		And the response should include a list of all instances of projects in JSON form
+		
+		Examples:
+		  | id |
+		  | 1  |
 	
-	Scenario Outline: Alternate flow - Successfully retrieve list of all projects in XML form
-		Given I have the application running 
-		When I send a GET request to "/projects" with Accept: application/xml set in my request header
-		Then I should receive a "200 OK" status
-		And the response should include a list of all instances of projects in XML form
+	Scenario Outline: Alternate flow - Successfully retrive todos of a specific project by id in XML forn
+		Given I possess a valid project id "<id>"
+		When I make a GET request to "/projects/<id>/tasks" with Accept: application/xml set in my request header
+		Then I should be a recipient of a "200 OK" status
 
-	Scenario Outline: Error flow - Retrieving All Projects without having application running
-		Given I don't have the application running on localhost:4567
-		When I send a GET request to "/projects" 
-		Then I should receive an error message
-		And The response should detail ECONNREFUSED 127.0.0.1:4567
+		Examples:
+		  | id |
+		  | 1  |
+
+	Scenario Outline: Error flow - Attempting to retrieve todos of a project with an invalid id
+		Given I possess an invalid project id "<id>"
+		When I create a GET request to "/projects/<id>/task"
+		Then I should be a recipient of a "404 Not Found" status
+		
+		Examples:
+		  | id |
+		  | 1 |
