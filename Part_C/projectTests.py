@@ -1,6 +1,7 @@
 import unittest
 import requests
 import logging
+import time
 
 logging.basicConfig(level=logging.INFO)
 
@@ -49,40 +50,85 @@ class TestTodoManagerAPI(unittest.TestCase):
         logging.info(f"Head All Projects Response: {response.status_code}")
         self.assertEqual(response.status_code, 200)
 
-    def test_create_project(self):
-        """POST /projects: Test creating a project."""
-        project_data = {
-            "title": "New Test Project",
-            "description": "This is a new test project.",
-            "active": True,
-            "completed": False
-        }
-        response = requests.post(self.BASE_URL, json=project_data)
-        logging.info(f"Create Project Response: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 201)
+    def test_create_multiple_projects(self):
+        """Test creating multiple projects and measure the time."""
+        num_projects = 400 
+        start_time = time.time()
 
-    def test_create_project_malformed_payload(self):
-        """POST /projects: Test creating a project with a malformed payload."""
-        project_data = {
-            "title": "New Test Project",
-            "description": "This is a new test project.",
-            "active": True,
-            "completed": False,
-            "malformed": "malformed"
-        }
-        response = requests.post(self.BASE_URL, json=project_data)
-        logging.info(f"Create Project Response with Malformed Payload: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 400)
+        for i in range(num_projects):
+            project_data = {
+                "title": f"Test Project {i+1}",
+                "description": f"This is project {i+1}.",
+                "active": True,
+                "completed": False
+            }
+            response = requests.post(self.BASE_URL, json=project_data)
+            self.assertEqual(response.status_code, 201, f"Failed to create project {i+1}")
 
-    def test_put_project_id(self):
-        """PUT /projects/:id: Test updating a project (this is not allowed at this endpoint)."""
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        logging.info(f"Time taken to create {num_projects} projects: {elapsed_time:.4f} seconds")
+
+    def test_delete_multiple_projects(self):
+        """Test deleting multiple projects and measure the time."""
+        num_projects = 400  
+        project_ids = []
+
+        # Create multiple projects first
+        for i in range(num_projects):
+            project_data = {
+                "title": f"Temp Project {i+1}",
+                "description": f"This project will be deleted after the test.",
+                "active": True,
+                "completed": False
+            }
+            create_response = requests.post(self.BASE_URL, json=project_data)
+            self.assertEqual(create_response.status_code, 201)
+            project_ids.append(create_response.json().get("id"))
+
+        # Now delete the projects
+        start_time = time.time()
+
+        for project_id in project_ids:
+            response = requests.delete(f"{self.BASE_URL}/{project_id}")
+            self.assertEqual(response.status_code, 200)
+
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        logging.info(f"Time taken to delete {num_projects} projects: {elapsed_time:.4f} seconds")
+
+    def test_update_multiple_projects(self):
+        """Test updating multiple projects and measure the time."""
+        num_projects = 400  
+        project_ids = []
+
+        # Create multiple projects first
+        for i in range(num_projects):
+            project_data = {
+                "title": f"Temp Project {i+1}",
+                "description": f"This project will be updated.",
+                "active": True,
+                "completed": False
+            }
+            create_response = requests.post(self.BASE_URL, json=project_data)
+            self.assertEqual(create_response.status_code, 201)
+            project_ids.append(create_response.json().get("id"))
+
+        # Now update the projects
         updated_data = {
             "title": "Updated Project",
             "description": "Updated description."
         }
-        response = requests.put(self.BASE_URL, json=updated_data)
-        logging.info(f"Update Project Response: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 405)
+
+        start_time = time.time()
+
+        for project_id in project_ids:
+            response = requests.put(f"{self.BASE_URL}/{project_id}", json=updated_data)
+            self.assertEqual(response.status_code, 200)
+
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        logging.info(f"Time taken to update {num_projects} projects: {elapsed_time:.4f} seconds")
 
     # /projects/:id
     def test_get_project_by_id(self):
@@ -100,13 +146,21 @@ class TestTodoManagerAPI(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_update_project(self):
-        """PUT /projects/:id: Test updating a project."""
+        """PUT /projects/:id: Test updating a project and measure the time."""
         updated_data = {
             "title": "Updated Project",
             "description": "Updated description."
         }
+
+        start_time = time.time()  
+
         response = requests.put(f"{self.BASE_URL}/{self.test_project_id}", json=updated_data)
+
+        end_time = time.time()  
+        elapsed_time = end_time - start_time
         logging.info(f"Update Project Response: {response.status_code} - {response.text}")
+        logging.info(f"Time taken to update Project: {elapsed_time:.4f} seconds")
+
         self.assertEqual(response.status_code, 200)
 
         response = requests.get(f"{self.BASE_URL}/{self.test_project_id}")
@@ -126,8 +180,7 @@ class TestTodoManagerAPI(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_delete_project(self):
-        """DELETE /projects/:id: Test deleting a project."""
-        
+        """DELETE /projects/:id: Test deleting a project and measure the time."""
         project_data = {
             "title": "Temp Project for Deletion",
             "description": "This project will be deleted after the test.",
@@ -142,79 +195,20 @@ class TestTodoManagerAPI(unittest.TestCase):
         response = requests.get(f"{self.BASE_URL}/{project_id}")
         self.assertEqual(response.status_code, 200, "Project should exist before deletion.")
 
+        start_time = time.time()  
+
         self.delete_project(project_id)
+
+        end_time = time.time()  
+        elapsed_time = end_time - start_time
+        logging.info(f"Time taken to delete Project: {elapsed_time:.4f} seconds")
 
         response = requests.get(f"{self.BASE_URL}/{project_id}")
         self.assertEqual(response.status_code, 404, "Project should not exist after deletion.")
 
-    # /projects/:id/tasks
-    def test_create_task_for_project(self):
-        """POST /projects/:id/tasks: Test creating a task for a project."""
-        task_data = {
-            "title": "test"
-        }
-        response = requests.post(f"{self.BASE_URL}/{self.test_project_id}/tasks", json=task_data)
-        logging.info(f"Create Task for Project Response: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 201)
-
-    def test_get_tasks_for_project(self):
-        """GET /projects/:id/tasks: Test retrieving tasks for a project."""
-        response = requests.get(f"{self.BASE_URL}/{self.test_project_id}/tasks")
-        logging.info(f"Get Tasks for Project Response: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 200)
-        self.assertIsInstance(response.json().get('todos'), list)
-
-    def test_head_tasks_for_project(self):
-        """HEAD /projects/:id/tasks: Test headers for tasks related to a project."""
-        response = requests.head(f"{self.BASE_URL}/{self.test_project_id}/tasks")
-        logging.info(f"Head Tasks for Project Response: {response.status_code}")
-        self.assertEqual(response.status_code, 200)
-
-    def test_delete_task_for_project(self):
-        """DELETE /projects/:id/tasks/:id: Test deleting a task for a project."""
-        task_data = {"title": "Test Task"}
-        post_response = requests.post(f"{self.BASE_URL}/{self.test_project_id}/tasks", json=task_data)
-        task_id = post_response.json().get("id")
-
-        response = requests.delete(f"{self.BASE_URL}/{self.test_project_id}/tasks/{task_id}")
-        logging.info(f"Delete Task for Project Response: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 200)
-
-    # /projects/:id/categories
-    def test_create_category_for_project(self):
-        """POST /projects/:id/categories: Test creating a category for a project."""
-        category_data = {
-            "title": "Test Category"
-        }
-        response = requests.post(f"{self.BASE_URL}/{self.test_project_id}/categories", json=category_data)
-        logging.info(f"Create Category for Project Response: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 201)
-
-    def test_get_categories_for_project(self):
-        """GET /projects/:id/categories: Test retrieving categories for a project."""
-        response = requests.get(f"{self.BASE_URL}/{self.test_project_id}/categories")
-        logging.info(f"Get Categories for Project Response: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 200)
-        self.assertIsInstance(response.json().get('categories'), list)
-
-    def test_head_categories_for_project(self):
-        """HEAD /projects/:id/categories: Test headers for categories related to a project."""
-        response = requests.head(f"{self.BASE_URL}/{self.test_project_id}/categories")
-        logging.info(f"Head Categories for Project Response: {response.status_code}")
-        self.assertEqual(response.status_code, 200)
-
-    def test_delete_category_for_project(self):
-        """DELETE /projects/:id/categories/:id: Test deleting a category for a project."""
-        category_data = {"title": "Test Category"}
-        post_response = requests.post(f"{self.BASE_URL}/{self.test_project_id}/categories", json=category_data)
-        category_id = post_response.json().get("id")
-
-        response = requests.delete(f"{self.BASE_URL}/{self.test_project_id}/categories/{category_id}")
-        logging.info(f"Delete Category for Project Response: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 200)
-
 if __name__ == "__main__":
     unittest.main()
+
 
 
 

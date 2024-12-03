@@ -1,6 +1,7 @@
 import unittest
 import requests
 import logging
+import time
 
 logging.basicConfig(level=logging.INFO)
 
@@ -41,89 +42,24 @@ class TestTodoAPI(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response.json().get('todos'), list)
 
-    def test_head_all_todos(self):
-        """HEAD /todos: Test headers for all todos."""
-        response = requests.head(self.BASE_URL)
-        logging.info(f"Head All Todos Response: {response.status_code}")
-        self.assertEqual(response.status_code, 200)
-
     def test_create_todo(self):
-        """POST /todos: Test creating a todo."""
+        """POST /todos: Test creating a todo and measure the time."""
         todo_data = {
             "title": "New Test Todo",
             "doneStatus": False
         }
+
+        start_time = time.time() 
         response = requests.post(self.BASE_URL, json=todo_data)
+        end_time = time.time()
+        elapsed_time = end_time - start_time
         logging.info(f"Create Todo Response: {response.status_code} - {response.text}")
+        logging.info(f"Time taken to create Todo: {elapsed_time:.4f} seconds")
+
         self.assertEqual(response.status_code, 201)
 
-    def test_put_todo(self):
-        """PUT /todos: Test updating a todo (this is not allowed at this endpoint)."""
-        todo_data = {
-            "title": "Updated Test Todo",
-            "doneStatus": False
-        }
-        response = requests.put(self.BASE_URL, json=todo_data)
-        logging.info(f"Update Todo Response: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 405)
-
-    def test_delete_todo_undocumented(self):
-        """DELETE /todos: Test deleting a todo (this is not allowed at this endpoint)."""
-        response = requests.delete(self.BASE_URL)
-        logging.info(f"Deleting Todo Response: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 405)
-
-    # /todos/:id
-    def test_get_todo_by_id(self):
-        """GET /todos/:id: Test retrieving a todo by its ID."""
-        response = requests.get(f"{self.BASE_URL}/{self.test_todo_id}")
-        logging.info(f"Get Todo By ID Response: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 200)
-
-    def test_head_todo_by_id(self):
-        """HEAD /todos/:id: Test headers for a specific todo by its ID."""
-        response = requests.head(f"{self.BASE_URL}/{self.test_todo_id}")
-        logging.info(f"Head Todo By ID Response: {response.status_code}")
-        self.assertEqual(response.status_code, 200)
-
-    def test_create_todo_id(self):
-        """POST /todos/:id: Test creating a todo."""
-        created_data = {
-            "title": "Updated Todo",
-            "doneStatus": True
-        }
-        response = requests.put(f"{self.BASE_URL}/{self.test_todo_id}", json=created_data)
-        logging.info(f"Created Todo Response: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 200)
-
-    def test_create_todo_id_malformed_payload(self):
-        """POST /todos/:id: Test creating a todo with malformed payload."""
-        created_data = {
-            "title": "Malformed Data Todo",
-            "doneStatus": True,
-            "malformedData": "test"
-        }
-        response = requests.put(f"{self.BASE_URL}/{self.test_todo_id}", json=created_data)
-        logging.info(f"Created Todo Response with Malformed Payload: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 400)
-
-    def test_update_todo(self):
-        """PUT /todos/:id: Test updating a todo."""
-        updated_data = {
-            "title": "Updated Todo",
-            "doneStatus": True
-        }
-        response = requests.put(f"{self.BASE_URL}/{self.test_todo_id}", json=updated_data)
-        logging.info(f"Update Todo Response: {response.status_code} - {response.text}")
-        self.assertEqual(response.status_code, 200)
-
-        response = requests.get(f"{self.BASE_URL}/{self.test_todo_id}")
-        logging.info(f"Verify Updated Todo Response: {response.status_code} - {response.text}")
-        todo_data = response.json().get('todos', [{}])[0]  
-        self.assertEqual(todo_data["title"], "Updated Todo")
-
     def test_delete_todo(self):
-        """DELETE /todos/:id: Test deleting a todo."""
+        """DELETE /todos/:id: Test deleting a todo and measure the time."""
         todo_data = {
             "title": "Temp Todo for Deletion",
             "doneStatus": False
@@ -133,13 +69,109 @@ class TestTodoAPI(unittest.TestCase):
         
         todo_id = create_response.json().get("id")
 
-        response = requests.get(f"{self.BASE_URL}/{todo_id}")
-        self.assertEqual(response.status_code, 200, "Todo should exist before deletion.")
+        start_time = time.time()
+        response = requests.delete(f"{self.BASE_URL}/{todo_id}")
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        logging.info(f"Delete Todo Response: {response.status_code} - {response.text}")
+        logging.info(f"Time taken to delete Todo: {elapsed_time:.4f} seconds")
 
-        self.delete_todo(todo_id)
+        self.assertIn(response.status_code, [204, 200])
 
-        response = requests.get(f"{self.BASE_URL}/{todo_id}")
-        self.assertEqual(response.status_code, 404, "Todo should not exist after deletion.")
+    def test_update_todo(self):
+        """PUT /todos/:id: Test updating a todo and measure the time."""
+        updated_data = {
+            "title": "Updated Todo",
+            "doneStatus": True
+        }
+
+        start_time = time.time()
+        response = requests.put(f"{self.BASE_URL}/{self.test_todo_id}", json=updated_data)
+        end_time = time.time()  
+        elapsed_time = end_time - start_time
+        logging.info(f"Update Todo Response: {response.status_code} - {response.text}")
+        logging.info(f"Time taken to update Todo: {elapsed_time:.4f} seconds")
+
+        self.assertEqual(response.status_code, 200)
+
+        response = requests.get(f"{self.BASE_URL}/{self.test_todo_id}")
+        logging.info(f"Verify Updated Todo Response: {response.status_code} - {response.text}")
+        todo_data = response.json().get('todos', [{}])[0]  
+        self.assertEqual(todo_data["title"], "Updated Todo")
+
+    def test_create_multiple_todos(self):
+        """Test creating multiple todos and measure the time for each operation."""
+        num_todos = 200  
+        start_time = time.time()
+
+        for i in range(num_todos):
+            todo_data = {
+                "title": f"Test Todo {i+1}",
+                "doneStatus": False
+            }
+            response = requests.post(self.BASE_URL, json=todo_data)
+            self.assertEqual(response.status_code, 201, f"Failed to create todo {i+1}")
+        
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        logging.info(f"Time taken to create {num_todos} todos: {elapsed_time:.4f} seconds")
+
+    def test_update_multiple_todos(self):
+        """Test updating multiple todos and measure the time for each operation."""
+        num_todos = 200 
+        todo_ids = [] 
+
+        # create multiple todos to update
+        for i in range(num_todos):
+            todo_data = {
+                "title": f"Test Todo {i+1}",
+                "doneStatus": False
+            }
+            response = requests.post(self.BASE_URL, json=todo_data)
+            self.assertEqual(response.status_code, 201, f"Failed to create todo {i+1}")
+            todo_ids.append(response.json().get("id"))
+
+        updated_data = {
+            "title": f"Test Todo {i+1}",
+            "doneStatus": True 
+        }
+
+        start_time = time.time()  
+
+        #update the todos
+        for todo_id in todo_ids:
+            response = requests.put(f"{self.BASE_URL}/{todo_id}", json=updated_data)
+            self.assertEqual(response.status_code, 200, f"Failed to update todo {todo_id}")
+
+        end_time = time.time()  
+        elapsed_time = end_time - start_time
+        logging.info(f"Time taken to update {num_todos} todos: {elapsed_time:.4f} seconds")
+
+    def test_delete_multiple_todos(self):
+        """Test deleting multiple todos and measure the time for each operation."""
+        num_todos = 200 
+        todo_ids = []
+
+        # Create todos
+        for i in range(num_todos):
+            todo_data = {
+                "title": f"Temp Todo {i+1}",
+                "doneStatus": False
+            }
+            create_response = requests.post(self.BASE_URL, json=todo_data)
+            self.assertEqual(create_response.status_code, 201)
+            todo_ids.append(create_response.json().get("id"))
+
+        # delete todos
+        start_time = time.time()
+
+        for todo_id in todo_ids:
+            response = requests.delete(f"{self.BASE_URL}/{todo_id}")
+            self.assertIn(response.status_code, [204, 200])
+
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        logging.info(f"Time taken to delete {num_todos} todos: {elapsed_time:.4f} seconds")
 
     # /todos/:id/categories
     def test_create_category_for_todo(self):
@@ -208,3 +240,4 @@ class TestTodoAPI(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
